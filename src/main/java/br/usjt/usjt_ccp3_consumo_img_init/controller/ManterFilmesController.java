@@ -201,6 +201,17 @@ public class ManterFilmesController {
 		}
 	}
 	
+	@RequestMapping("/baixar_lancamentos")
+	public String baixarFilmesLancamento() {
+		try {
+			fService.baixarFilmesMaisPopulares();
+			return "ListarFilmes";
+		} catch(IOException e) {
+			e.printStackTrace();
+			return "Erro";
+		}
+	}
+	
 }
 
 

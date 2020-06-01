@@ -26,6 +26,7 @@ public class FilmeService {
 
 	public static final String BASE_URL = "https://api.themoviedb.org/3";
 	public static final String POPULAR = "/movie/popular";
+	public static final String LANCAMENTO = "/movie/upcoming";
 	public static final String POPULAR_PAR = "&language=pt-BR";
 	public static final String API_KEY = "api_key=3c2961767239c4784df96d86dd0dfb5a";
 	public static final String POSTER_URL = "https://image.tmdb.org/t/p/w300";
@@ -87,6 +88,32 @@ public class FilmeService {
 		}
 		return dao.listarFilmes();
 	}
+	@Transactional
+	public List<Filme> baixarFilmesLancamento() throws IOException{
+		RestTemplate rest = new RestTemplate();
+		String url = BASE_URL + LANCAMENTO + "?" + API_KEY + POPULAR_PAR;
+		System.out.println("url: " + url);
+		Populares resultado = rest.getForObject(url, Populares.class);
+		System.out.println("resultado: " + resultado);
+		
+		for(Movie movie: resultado.getResults()) {
+			System.out.println(movie);
+			
+			Filme filme = new Filme();
+			filme.setTitulo(movie.getTitle());
+			filme.setDataLancamento(movie.getRelease_date());
+			filme.setPopularidade(movie.getPopularity());
+			filme.setPosterPath(POSTER_URL + movie.getPoster_path());
+			filme.setDescricao(movie.getOverview());
+			Genero genero = new Genero();
+			genero.setId(movie.getGenre_ids()[0]);
+			filme.setGenero(genero);
+			
+			dao.inserirFilme(filme);
+			
+		}
+		return dao.listarFilmes();
+	}	
 	
 	public void gravarImagem(ServletContext servletContext, Filme filme, MultipartFile file) throws IOException {
 		if(!file.isEmpty()) {
