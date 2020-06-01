@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -13,11 +14,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.usjt.usjt_ccp3_consumo_img_init.model.entity.Filme;
 import br.usjt.usjt_ccp3_consumo_img_init.model.entity.Genero;
 import br.usjt.usjt_ccp3_consumo_img_init.model.service.FilmeService;
 import br.usjt.usjt_ccp3_consumo_img_init.model.service.GeneroService;
+import net.bytebuddy.asm.Advice.Local;
 
 
 @Controller
@@ -26,6 +29,9 @@ public class ManterFilmesController {
 	private FilmeService fService;
 	@Autowired
 	private GeneroService gService;
+	
+	@Autowired
+	private ServletContext servletContext;
 	
 	public ManterFilmesController() {
 		System.out.println("versão 0.7b.07");
@@ -60,13 +66,14 @@ public class ManterFilmesController {
 	}
 	
 	@RequestMapping("/inserir_filme")
-	public String inserirFilme(@Valid Filme filme, BindingResult result, Model model) {
+	public String inserirFilme(@Valid Filme filme, BindingResult result, Model model, @RequestParam("file") MultipartFile file) {
 		try {
 			if(!result.hasFieldErrors("titulo")) {
 				Genero genero = gService.buscarGenero(filme.getGenero().getId());
 				filme.setGenero(genero);
 				model.addAttribute("filme", filme);
 				fService.inserirFilme(filme);
+				fService.gravarImagem(servletContext, filme, file);
 				return "VisualizarFilme";
 			} else {
 				return "CriarFilme";
@@ -158,16 +165,16 @@ public class ManterFilmesController {
 	}
 
 	@RequestMapping("/atualizar_filme")
-	public String gravarAtualizacaoFilme(@Valid Filme filme, BindingResult erros, Model model, HttpSession session) {
+	public String gravarAtualizacaoFilme(@Valid Filme filme, BindingResult erros, Model model, HttpSession session, @RequestParam("file") MultipartFile file) {
 		try {
 			if (!erros.hasErrors()) {
 				Genero genero = new Genero();
 				genero.setId(filme.getGenero().getId());
 				genero.setNome(gService.buscarGenero(genero.getId()).getNome());
 				filme.setGenero(genero);
-
+				
 				fService.atualizarFilme(filme);
-
+				fService.gravarImagem(servletContext, filme, file);
 				model.addAttribute("filme", filme);
 				List<Filme> filmes = (List<Filme>) session.getAttribute("lista");
 				session.setAttribute("lista", atualizarDaLista(filme, filmes));
@@ -187,12 +194,13 @@ public class ManterFilmesController {
 	public String baixarFilmesMaisPopulares() {
 		try {
 			fService.baixarFilmesMaisPopulares();
-			return "listarFilmes";
+			return "ListarFilmes";
 		} catch(IOException e) {
 			e.printStackTrace();
 			return "Erro";
 		}
 	}
+	
 }
 
 

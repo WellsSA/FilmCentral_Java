@@ -22,6 +22,13 @@
   						   <li><a class="dropdown-item" href="#">Lançamentos</a></li>
 						</ul>
                     </li>
+                    <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cargas</a>
+                    		<ul class="dropdown-menu">
+  						  <li><a class="dropdown-item" href="baixar_populares">Mais populares</a></li>
+  						   <li><a class="dropdown-item" href="baixar_lancamentos">Lançamentos</a></li>
+						</ul>
+                    </li>                    
                 </ul>
             </div>
         </div>

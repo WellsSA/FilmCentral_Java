@@ -1,13 +1,19 @@
 package br.usjt.usjt_ccp3_consumo_img_init.model.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.usjt.usjt_ccp3_consumo_img_init.model.dao.FilmeDAO;
 import br.usjt.usjt_ccp3_consumo_img_init.model.entity.Filme;
@@ -79,7 +85,27 @@ public class FilmeService {
 			dao.inserirFilme(filme);
 			
 		}
-		return null;
+		return dao.listarFilmes();
+	}
+	
+	public void gravarImagem(ServletContext servletContext, Filme filme, MultipartFile file) throws IOException {
+		if(!file.isEmpty()) {
+			BufferedImage src = ImageIO.read(new ByteArrayInputStream(file.getBytes()));
+			
+			String path = servletContext.getRealPath(servletContext.getContextPath());
+			int lastIndex = path.lastIndexOf('/');
+			path = path.substring(0, lastIndex != -1 ? lastIndex : path.length());
+			String nomeArquivo = "img" + filme.getId()+ ".jpg";
+			File destination = new File(path + File.separatorChar + "img" + File.separatorChar + nomeArquivo);
+			filme.setPosterPath(destination.getPath() + File.separatorChar + nomeArquivo);
+			
+			atualizarFilme(filme);
+			
+			if(destination.exists()) {
+				destination.delete();
+			}
+			ImageIO.write(src, "jpg", destination);
+		}
 	}
 	
 }
